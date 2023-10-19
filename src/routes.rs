@@ -19,7 +19,6 @@ pub struct Content {
     pub content: String,
     pub linkedin: String,
     pub twitter: String,
-    pub current: bool,
 }
 
 pub async fn get() -> (StatusCode, Json<Vec<Content>>) {
@@ -36,10 +35,31 @@ pub async fn create(Json(payload): Json<CreateEntry>) -> (StatusCode, Json<Conte
         content: payload.content,
         linkedin: "".to_string(),
         twitter: "".to_string(),
-        current: false,
     };
 
     postgres::create_entry(Json(content.clone())).await.unwrap();
 
     (StatusCode::CREATED, Json(content))
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct UpdateEntry {
+    id: String,
+    content: String,
+}
+
+pub async fn update(Json(UpdateEntry): Json<UpdateEntry>) -> StatusCode {
+    // get the last entry
+    // update the content
+    let last_entry_ = postgres::get_last_entry().await.unwrap();
+
+    if last_entry_.id != UpdateEntry.id {
+        return StatusCode::BAD_REQUEST;
+    }
+
+    postgres::update_entry(last_entry_.id.clone(), UpdateEntry.content)
+        .await
+        .unwrap();
+
+    StatusCode::OK
 }

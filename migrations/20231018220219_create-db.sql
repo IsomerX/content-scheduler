@@ -3,6 +3,5 @@ CREATE TABLE IF NOT EXISTS content (
     date TIMESTAMP WITH TIME ZONE,
     content TEXT,
     linkedin TEXT,
-    twitter TEXT,
-    current BOOLEAN
+    twitter TEXT
 );

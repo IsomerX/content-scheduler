@@ -2,7 +2,6 @@ services:
   server:
     build:
       context: .
-      target: build
     ports:
       - 3000:3000
     depends_on:
