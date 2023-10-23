@@ -6,6 +6,7 @@ use sqlx::query;
 use sqlx::Row;
 use std::error::Error;
 use tokio;
+use std::net::{ToSocketAddrs};
 
 mod postgres;
 mod routes;
@@ -21,9 +22,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .route("/get", get(routes::get))
         .route("/update", put(routes::update));
 
-    let addr = "server:3123".parse().unwrap();
-
-    axum::Server::bind(&addr)
+    let mut addr = "172.20.0.3:3000".to_socket_addrs().unwrap();
+    let socket_addr = match addr.next() {
+        Some(socket_addr) => socket_addr.clone(),
+        None => {
+            eprintln!("Failed to resolve socket address");
+            return Ok(());
+        }
+    };
+    axum::Server::bind(&socket_addr)
         .serve(app.into_make_service())
         .await
         .unwrap();

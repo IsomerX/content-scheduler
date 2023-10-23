@@ -11,7 +11,7 @@ use crate::routes;
 use crate::routes::Content;
 
 pub async fn create_pool() -> Result<PgPool, sqlx::Error> {
-    let url = "postgres://dbuser:mysecretpassword@localhost:5342/content";
+    let url = "postgres://dbuser:mysecretpassword@db:5432/content";
     let pool = sqlx::postgres::PgPool::connect(url).await?;
 
     Ok(pool)

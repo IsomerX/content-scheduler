@@ -1,21 +1,20 @@
-FROM rust:buster as builder
-ENV APP backend
-# update rust (debian?)
-RUN rustup update
-
-# Cache dependencies
+FROM rust:1.68.1 as builder
+WORKDIR /usr/local/src
 COPY Cargo.toml Cargo.lock ./
-COPY src ./src
-COPY migrations ./migrations
+RUN mkdir ./src && echo 'fn main() { println!("Dummy!"); }' > ./src/main.rs
+RUN cargo build --release 
+
+
+COPY . .
 RUN cargo build --release
+RUN rm -rf target/release/*.*
+RUN find target/release -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 rm -rf 
+RUN mv target/release/* ./app
 
-FROM debian:buster
-ENV APP backend
+FROM ubuntu:20.04
 RUN apt update                      \
-    && apt install -y libssl1.1     \
+    && apt install -y libssl1.1   \
     && rm -rf /var/lib/apt/lists/*
-
-COPY --from=builder /target/release/$APP /usr/local/bin/$APP
-
-EXPOSE 3123
-ENTRYPOINT ["/usr/local/bin/backend"]
+COPY --from=builder /usr/local/src/app /usr/local/bin/app
+WORKDIR /usr/local/bin
+CMD [ "./app" ]
